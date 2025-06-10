@@ -117,6 +117,10 @@ def rate_movies(request):
 
     # ✅ 给每部电影添加 tags 列表字段（预处理）
     for m in movies:
+        # 提取主类型
+        main_genre = m.genres.split("|")[0] if m.genres else "default"
+        m.poster_url = f"posters/{main_genre.strip()}.png" # 所有图片都是我用ai生成的
+        # 分割标签
         if isinstance(m.tags, str):
             m.tag_list = [t.strip() for t in m.tags.split("|") if t.strip()]
         else:
