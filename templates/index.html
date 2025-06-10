@@ -9,25 +9,33 @@
     <script src="{% static 'js/aos.js' %}"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body onload="AOS.init()">
+<body onload="AOS.init()" style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; background: #f5f5f7; color: #1d1d1f;">
 
-    <header class="header">
-        <div class="logo">🎬 ReelRate</div>
-        <nav class="nav">
-            <a href="{% url 'login' %}">登录</a>
-            
-            <a href="{% url 'register' %}">注册</a>
+    <header class="header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 3rem; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <div class="logo" style="font-size: 1.8rem; font-weight: bold;">🎬 ReelRate</div>
+        <nav class="nav" style="display: flex; gap: 2rem;">
+            <a href="{% url 'login' %}" style="text-decoration: none; color: #0071e3; font-weight: 500;">登录</a>
+            <a href="{% url 'register' %}" style="text-decoration: none; color: #0071e3; font-weight: 500;">注册</a>
         </nav>
     </header>
 
-    <section class="hero" data-aos="fade-up">
-        <h1 class="title">欢迎来到智能电影推荐系统</h1>
-        <p class="subtitle">基于大数据与协同过滤，为你发现最爱电影。</p>
-        <a href="{% url 'login' %}" class="cta-button" data-aos="zoom-in">立即开始</a>
+    <section class="hero" data-aos="fade-up" style="text-align: center; padding: 5rem 2rem; background: linear-gradient(to bottom, #ffffff, #e5e5ea);">
+        <h1 class="title" style="font-size: 2.8rem; font-weight: 700; margin-bottom: 1rem;">欢迎来到智能电影推荐系统</h1>
+        <p class="subtitle" style="font-size: 1.2rem; color: #6e6e73; margin-bottom: 2rem;">基于大数据与协同过滤，为你发现最爱电影。</p>
+        <a href="{% url 'login' %}" class="cta-button" data-aos="zoom-in" style="display: inline-block; background: #0071e3; color: white; padding: 1rem 2rem; border-radius: 999px; text-decoration: none; font-size: 1rem;">立即开始</a>
     </section>
 
-    <footer class="footer">
-        <p>© 2025 ReelRate. Inspired by Apple Design.</p>
+    <section data-aos="fade-up" style="padding: 4rem 2rem; max-width: 960px; margin: 0 auto;">
+        <h2 style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">系统特点</h2>
+        <ul style="list-style: none; padding: 0; font-size: 1rem; color: #3a3a3c;">
+            <li style="margin-bottom: 1rem;">🔍 精准推荐：基于用户评分行为的协同过滤算法</li>
+            <li style="margin-bottom: 1rem;">⚡ 实时响应：Spark 计算引擎快速生成推荐</li>
+            <li style="margin-bottom: 1rem;">🎯 个性化服务：为每位用户定制观影列表</li>
+        </ul>
+    </section>
+
+    <footer class="footer" style="text-align: center; padding: 2rem 0; background: #f2f2f7; color: #6e6e73;">
+        <p>© 2025 ReelRate. Developed by Tao Yifan and Le Haomiao.</p>
     </footer>
 
 </body>
