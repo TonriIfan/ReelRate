@@ -100,3 +100,26 @@ def login_view(request):
         else:
             messages.error(request, "用户名或密码错误")
     return render(request, "login.html")
+
+
+@login_required
+def rate_movies(request):
+    if request.method == "POST":
+        for movie_id, score in request.POST.items():
+            if movie_id.startswith("movie_") and score:
+                mid = int(movie_id.replace("movie_", ""))
+                Rating.objects.create(user=request.user, movie_id=mid, score=float(score))
+
+        generate_itemcf_for_user_mysql(request.user.id)
+        return redirect("show_recommendation")
+
+    movies = Movie.objects.order_by("?")[:10]
+
+    # ✅ 给每部电影添加 tags 列表字段（预处理）
+    for m in movies:
+        if isinstance(m.tags, str):
+            m.tag_list = [t.strip() for t in m.tags.split("|") if t.strip()]
+        else:
+            m.tag_list = []
+
+    return render(request, "rate.html", {"movies": movies})

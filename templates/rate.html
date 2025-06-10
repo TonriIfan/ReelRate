@@ -1,19 +1,174 @@
-<!-- templates/rate.html -->
-<h2>请为以下电影评分：</h2>
-<form method="post">
-  {% csrf_token %}
-  <ul>
-    {% for movie in movies %}
-      <li>
-        {{ movie.title }}
-        <select name="movie_{{ movie.movie_id }}">
-          <option value="">未评分</option>
-          {% for i in "12345"|make_list %}
-            <option value="{{ i }}">{{ i }}</option>
-          {% endfor %}
-        </select>
-      </li>
-    {% endfor %}
-  </ul>
-  <button type="submit">提交评分</button>
-</form>
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>评分电影 - ReelRate</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'js/aos.css' %}">
+    <script src="{% static 'js/aos.js' %}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .movie-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        }
+
+        .movie-card {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-start;
+            gap: 0.2rem;
+            font-size: 1.2rem;
+        }
+
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+
+        .star-rating label {
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #FFD700;
+        }
+        .star-rating label {
+            font-size: 1.6rem;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.3s;
+            user-select: none;
+        }
+
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #FFD700;
+        }
+        .tag-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* 限制显示 2 行 */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-height: 3rem; /* 可调整行高控制最大高度 */
+        }
+        .tag-container {
+            display: block;
+            max-height: 3.5rem;
+            overflow: hidden;
+            position: relative;
+            transition: max-height 0.3s ease;
+        }
+
+        .tag-container.expanded {
+            max-height: 200px; /* 大于所有 tag 行高即可 */
+        }
+
+        .tag-badge {
+            display: inline-block;
+            background-color: #eef0f4;
+            color: #007aff;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 999px;
+            margin: 2px 4px 2px 0;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .tag-badge:hover {
+            background-color: #dce9ff;
+            color: #0050b3;
+        }
+
+        .tag-toggle {
+            display: inline-block;
+            font-size: 0.75rem;
+            color: #007aff;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body onload="AOS.init()" style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; background: #f5f5f7; color: #1d1d1f;">
+
+<header class="header">
+    <div class="logo">🎬 ReelRate</div>
+    <nav class="nav">
+        <a href="{% url 'login' %}">登录</a>
+        <a href="{% url 'register' %}">注册</a>
+    </nav>
+</header>
+
+<section style="padding: 4rem 2rem; max-width: 1200px; margin: 0 auto;" data-aos="fade-up">
+    <h2 class="form-title">请为以下电影评分</h2>
+    <form method="post" class="login-form">
+        {% csrf_token %}
+        <div class="movie-grid">
+            {% for movie in movies %}
+            <div class="movie-card" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:"1" }}00">
+                <h3>🎬 {{ movie.title }} ({{ movie.year }})</h3>
+                <p>📅 类型：{{ movie.genres }}</p>
+                <p>🏷️ 标签：
+                    <span class="tag-container" id="tags-{{ movie.movie_id }}">
+                        {% for tag in movie.tag_list %}
+                            <a href="https://www.baidu.com/s?wd={{ tag|urlencode }}" class="tag-badge" target="_blank">{{ tag }}</a>
+                        {% endfor %}
+                    </span>
+                    {% if movie.tag_list|length > 5 %}
+                        <a href="javascript:void(0)" class="tag-toggle" onclick="toggleTags({{ movie.movie_id }})">展开</a>
+                    {% endif %}
+                </p>
+                <label>评分：</label>
+                <div class="star-rating" data-id="{{ movie.movie_id }}">
+                    {% for i in "54321"|make_list %}  {# 倒序渲染星星（从右到左） #}
+                        <input type="radio" id="movie_{{ movie.movie_id }}_{{ i }}" name="movie_{{ movie.movie_id }}" value="{{ i }}">
+                        <label for="movie_{{ movie.movie_id }}_{{ i }}">★</label>
+                    {% endfor %}
+                </div>
+            <div style="text-align: right; font-size: 0.9rem; color: #007aff;">点击星星评分</div>
+
+            </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="cta-button" style="margin-top: 2rem;">提交评分</button>
+    </form>
+</section>
+
+<footer class="footer">
+    <p>© 2025 ReelRate. Developed by Tao Yifan and Le Haomiao.</p>
+</footer>
+<script>
+function toggleTags(movieId) {
+    const container = document.getElementById('tags-' + movieId);
+    container.classList.toggle('expanded');
+    const toggleLink = container.nextElementSibling;
+    if (container.classList.contains('expanded')) {
+        toggleLink.textContent = '收起';
+    } else {
+        toggleLink.textContent = '展开';
+    }
+}
+</script>
+
+</body>
+</html>
