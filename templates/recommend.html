@@ -1,0 +1,20 @@
+<!-- recommend/templates/recommend.html -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>推荐电影</title>
+</head>
+<body>
+    <h1>为你推荐的电影</h1>
+    {% if recommended_movies %}
+        <ul>
+            {% for rec in recommended_movies %}
+                <li>{{ rec.movie.title }} - 相似度分数: {{ rec.score|floatformat:2 }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>暂无推荐，请评分后再试！</p>
+    {% endif %}
+</body>
+</html>

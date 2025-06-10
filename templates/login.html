@@ -1,0 +1,8 @@
+<h2>用户登录</h2>
+<form method="post">
+  {% csrf_token %}
+  <label>用户名：<input type="text" name="username"></label><br>
+  <label>密码：<input type="password" name="password"></label><br>
+  <button type="submit">登录</button>
+</form>
+<a href="{% url 'register' %}">还没有账号？点击注册</a>

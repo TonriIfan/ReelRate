@@ -1,0 +1,19 @@
+<!-- templates/rate.html -->
+<h2>请为以下电影评分：</h2>
+<form method="post">
+  {% csrf_token %}
+  <ul>
+    {% for movie in movies %}
+      <li>
+        {{ movie.title }}
+        <select name="movie_{{ movie.movie_id }}">
+          <option value="">未评分</option>
+          {% for i in "12345"|make_list %}
+            <option value="{{ i }}">{{ i }}</option>
+          {% endfor %}
+        </select>
+      </li>
+    {% endfor %}
+  </ul>
+  <button type="submit">提交评分</button>
+</form>

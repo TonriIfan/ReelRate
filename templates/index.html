@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>ReelRate - 智能推荐电影系统</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'js/aos.css' %}">
+    <script src="{% static 'js/aos.js' %}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body onload="AOS.init()">
+
+    <header class="header">
+        <div class="logo">🎬 ReelRate</div>
+        <nav class="nav">
+            <a href="{% url 'login' %}">登录</a>
+            
+            <a href="{% url 'register' %}">注册</a>
+        </nav>
+    </header>
+
+    <section class="hero" data-aos="fade-up">
+        <h1 class="title">欢迎来到智能电影推荐系统</h1>
+        <p class="subtitle">基于大数据与协同过滤，为你发现最爱电影。</p>
+        <a href="{% url 'login' %}" class="cta-button" data-aos="zoom-in">立即开始</a>
+    </section>
+
+    <footer class="footer">
+        <p>© 2025 ReelRate. Inspired by Apple Design.</p>
+    </footer>
+
+</body>
+</html>
