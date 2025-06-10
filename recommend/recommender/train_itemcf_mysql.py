@@ -1,4 +1,3 @@
-# recommend/recommender/train_itemcf_mysql.py
 import os
 import pandas as pd
 from pyspark.sql import SparkSession
@@ -7,21 +6,15 @@ from sklearn.metrics.pairwise import cosine_similarity
 from recommend.models import RecommendedMovie, User, Movie
 from django.db import transaction
 
-# ✅ 获取当前项目路径，定位 JDBC jar 包
+# ✅ 获取 JDBC 驱动路径
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JAR_PATH = os.path.join(BASE_DIR, "lib", "mysql-connector-j-8.0.33", "mysql-connector-j-8.0.33.jar")
 
-def generate_itemcf_for_user_mysql(user_id: int, top_n: int = 10, sample_fraction: float = 0.01):
-
-
+def generate_itemcf_for_user_mysql(user_id: int, top_n: int = 10, sample_fraction: float = 0.05):
     print(f"🎯 使用 PySpark 从 MySQL 为用户 {user_id} 生成推荐")
-
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    JAR_PATH = os.path.join(BASE_DIR, "lib", "mysql-connector-j-8.0.33", "mysql-connector-j-8.0.33.jar")
     print(f"📦 加载 JDBC 驱动路径：{JAR_PATH}")
 
-
-    # ✅ 配置 Spark 内存限制防 OOM
+    # ✅ 启动 Spark
     spark = SparkSession.builder \
         .appName("ItemCF-Recommend") \
         .config("spark.jars", JAR_PATH) \
@@ -29,7 +22,7 @@ def generate_itemcf_for_user_mysql(user_id: int, top_n: int = 10, sample_fractio
         .config("spark.executor.memory", "4g") \
         .getOrCreate()
 
-    # ✅ 从 MySQL 中读取评分表
+    # ✅ 从 MySQL 读取评分表
     df = spark.read.format("jdbc") \
         .option("url", "jdbc:mysql://localhost:3306/reelrate_db") \
         .option("dbtable", "recommend_rating") \
@@ -39,15 +32,22 @@ def generate_itemcf_for_user_mysql(user_id: int, top_n: int = 10, sample_fractio
         .load() \
         .select("user_id", "movie_id", "score")
 
-    # ✅ 可选抽样（仅用于开发调试阶段）
+    # ✅ 分离当前用户评分和其他用户评分
+    user_ratings = df.filter(df["user_id"] == user_id)
+    other_ratings = df.filter(df["user_id"] != user_id)
+
+    # ✅ 对其他用户评分进行抽样
     if 0 < sample_fraction < 1:
         print(f"📉 抽样数据：仅保留 {sample_fraction*100:.1f}% 用于推荐训练")
-        df = df.sample(withReplacement=False, fraction=sample_fraction, seed=42)
+        other_ratings = other_ratings.sample(withReplacement=False, fraction=sample_fraction, seed=42)
 
-    # ✅ 转为 Pandas 进行 ItemCF
-    pdf = df.toPandas()
+    # ✅ 合并当前用户评分和抽样数据
+    combined_df = user_ratings.union(other_ratings)
 
-    if user_id not in pdf['user_id'].unique():
+    # ✅ 转换为 Pandas DataFrame
+    pdf = combined_df.toPandas()
+
+    if user_id not in pdf["user_id"].unique():
         print(f"⚠ 用户 {user_id} 无评分，跳过推荐")
         spark.stop()
         return

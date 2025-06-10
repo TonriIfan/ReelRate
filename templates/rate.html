@@ -128,8 +128,10 @@
 <header class="header">
     <div class="logo">🎬 ReelRate</div>
     <nav class="nav">
+        <span>欢迎，{{ request.user.username }}</span>
         <a href="{% url 'login' %}">登录</a>
         <a href="{% url 'register' %}">注册</a>
+        <a href="{% url 'logout' %}">登出</a>
     </nav>
 </header>
 

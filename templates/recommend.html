@@ -1,20 +1,80 @@
-<!-- recommend/templates/recommend.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>推荐电影</title>
+    <title>ReelRate - 推荐结果</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'js/aos.css' %}">
+    <script src="{% static 'js/aos.js' %}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .recommend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .movie-card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 12px 12px 0 0;
+        }
+        .card-info {
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+        .card-info h3 {
+            font-size: 1rem;
+            margin: 0 0 0.5rem;
+        }
+        .score {
+            color: #007aff;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
-<body>
-    <h1>为你推荐的电影</h1>
+<body onload="AOS.init()" style="background: #f8f8f8; color: #111;">
+
+<header class="header">
+    <div class="logo">🎬 ReelRate
+    </div>
+    <nav class="nav">
+        <span>你好，{{ request.user.username }}</span>
+        <a href="{% url 'rate_movies' %}">继续评分</a>
+        <a href="{% url 'logout' %}">登出</a>
+
+
+    </nav>
+</header>
+
+<section style="padding: 4rem 2rem; max-width: 1200px; margin: auto;">
+    <h2 class="form-title">为你推荐的电影</h2>
+
     {% if recommended_movies %}
-        <ul>
+        <div class="recommend-grid">
             {% for rec in recommended_movies %}
-                <li>{{ rec.movie.title }} - 相似度分数: {{ rec.score|floatformat:2 }}</li>
+            {% with movie=rec.movie %}
+            <div class="movie-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'1' }}00">
+            <img src="{% static rec.poster_url %}" alt="{{ rec.movie.title }}">
+                <div class="card-info">
+                    <h3>{{ movie.title }} ({{ movie.year }})</h3>
+                    <p>📅 类型：{{ movie.genres }}</p>
+                    <p class="score">推荐指数：{{ rec.score|floatformat:2 }}</p>
+                </div>
+            </div>
+            {% endwith %}
             {% endfor %}
-        </ul>
+        </div>
     {% else %}
-        <p>暂无推荐，请评分后再试！</p>
+        <p>暂无推荐，请返回首页评分！</p>
     {% endif %}
+</section>
+
+<footer class="footer">
+    <p>© 2025 ReelRate. Developed by Tao Yifan and Le Haomiao.</p>
+</footer>
+
 </body>
 </html>

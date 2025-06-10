@@ -85,20 +85,41 @@ def rate_movies(request):
 @login_required
 def show_recommendations(request):
     recommended = RecommendedMovie.objects.filter(user=request.user).select_related('movie')
+
+    for rec in recommended:
+        genres = rec.movie.genres
+        main_genre = genres.split("|")[0] if genres else "default"
+        rec.poster_url = f'posters/{main_genre}.png'
+
     return render(request, "recommend.html", {"recommended_movies": recommended})
+
+
 
 
 
 def login_view(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+
+        # ✅ 检查用户是否存在
+        try:
+            user_obj = User.objects.get(username=username)
+        except User.DoesNotExist:
+            messages.error(request, "用户不存在，请先注册")
+            return render(request, "login.html")
+
+        # ✅ 尝试认证用户（密码是否正确）
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)
-            return redirect("rate_movies")
+            if not user.is_active:
+                messages.error(request, "该账号已被禁用，请联系管理员")
+            else:
+                login(request, user)
+                return redirect("rate_movies")
         else:
-            messages.error(request, "用户名或密码错误")
+            messages.error(request, "密码错误，请重试")
+
     return render(request, "login.html")
 
 
@@ -126,4 +147,23 @@ def rate_movies(request):
         else:
             m.tag_list = []
 
+    print("用户评分记录：", Rating.objects.filter(user=request.user).count())
+
     return render(request, "rate.html", {"movies": movies})
+
+def register(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        password1 = request.POST["password1"]
+        password2 = request.POST["password2"]
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "用户名已存在")
+        elif password1 != password2:
+            messages.error(request, "两次密码输入不一致")
+        else:
+            user = User.objects.create_user(username=username, password=password1)
+            login(request, user)
+            return redirect("rate_movies")
+
+    return render(request, "register.html")
