@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from recommend.models import RecommendedMovie, Movie
 import random
 
+
 def index(request):
     return render(request, "index.html")
 
@@ -32,60 +33,6 @@ def register(request):
     return render(request, "register.html")
 
 
-# @login_required
-# def rate_movies(request):
-#     if request.method == "POST":
-#         # 提交评分
-#         for movie_id, score in request.POST.items():
-#             if movie_id.startswith("movie_") and score:
-#                 mid = int(movie_id.replace("movie_", ""))
-#                 Rating.objects.create(user=request.user, movie_id=mid, score=float(score))
-#
-#         # 自动生成个性化推荐
-#         generate_itemcf_for_user(request.user.id)
-#
-#         return redirect("show_recommendation")
-#
-#     # 否则随机取 10 部电影打分
-#     movies = Movie.objects.order_by("?")[:10]
-#     return render(request, "rate.html", {"movies": movies})
-# @login_required
-# def rate_movies(request):
-#     if request.method == "POST":
-#         for movie_id, score in request.POST.items():
-#             if movie_id.startswith("movie_") and score:
-#                 mid = int(movie_id.replace("movie_", ""))
-#                 Rating.objects.create(user=request.user, movie_id=mid, score=float(score))
-#
-#         # ✅ 导出评分 CSV 文件
-#         export_ratings_csv("ratings.csv")
-#
-#         # ✅ 使用 PySpark 推荐逻辑
-#         generate_itemcf_for_user_spark("ratings.csv", request.user.id)
-#
-#         return redirect("show_recommendation")
-#
-#     # ✅ 处理 GET 请求时展示打分页
-#     movies = Movie.objects.order_by("?")[:10]
-#     return render(request, "rate.html", {"movies": movies})
-@login_required
-def rate_movies(request):
-    if request.method == "POST":
-        for movie_id, score in request.POST.items():
-            if movie_id.startswith("movie_") and score:
-                mid = int(movie_id.replace("movie_", ""))
-                Rating.objects.create(user=request.user, movie_id=mid, score=float(score))
-
-        # ✅ 直接从 MySQL 使用 Spark 生成推荐（不需要 CSV）
-        generate_itemcf_for_user_mysql(request.user.id)
-
-        return redirect("show_recommendation")
-
-    # ✅ 处理 GET 请求时展示打分页
-    movies = Movie.objects.order_by("?")[:10]
-    return render(request, "rate.html", {"movies": movies})
-
-
 @login_required
 def show_recommendations(request):
     recommended = RecommendedMovie.objects.filter(user=request.user).select_related('movie')
@@ -96,9 +43,6 @@ def show_recommendations(request):
         rec.poster_url = f'posters/{main_genre}.png'
 
     return render(request, "recommend.html", {"recommended_movies": recommended})
-
-
-
 
 
 def login_view(request):
@@ -130,28 +74,24 @@ def login_view(request):
 @login_required
 def rate_movies(request):
     if request.method == "POST":
+        # 只有在 POST 时才提交评分和训练模型
         for movie_id, score in request.POST.items():
             if movie_id.startswith("movie_") and score:
                 mid = int(movie_id.replace("movie_", ""))
                 Rating.objects.create(user=request.user, movie_id=mid, score=float(score))
 
+        print("✅ 已提交评分，调用推荐模型")
         generate_itemcf_for_user_mysql(request.user.id)
         return redirect("show_recommendation")
 
+    # GET 请求：仅展示打分页，绝不调用训练函数
+    print("📄 进入评分页面 GET 请求，无推荐逻辑")
     movies = Movie.objects.order_by("?")[:10]
 
-    # ✅ 给每部电影添加 tags 列表字段（预处理）
     for m in movies:
-        # 提取主类型
         main_genre = m.genres.split("|")[0] if m.genres else "default"
-        m.poster_url = f"posters/{main_genre.strip()}.png" # 所有图片都是我用ai生成的
-        # 分割标签
-        if isinstance(m.tags, str):
-            m.tag_list = [t.strip() for t in m.tags.split("|") if t.strip()]
-        else:
-            m.tag_list = []
-
-    print("用户评分记录：", Rating.objects.filter(user=request.user).count())
+        m.poster_url = f"posters/{main_genre.strip()}.png"
+        m.tag_list = [t.strip() for t in m.tags.split("|") if t.strip()] if isinstance(m.tags, str) else []
 
     return render(request, "rate.html", {"movies": movies})
 
@@ -201,3 +141,35 @@ def replace_movie(request, rec_id):
         'score': rec.score,
         'poster_url': poster_url
     })
+
+
+from django.template.loader import render_to_string
+
+@require_POST
+def replace_rating(request, movie_id):
+    # ✅ 移除当前电影 ID，准备候选列表
+    existing_ids = list(Movie.objects.all().values_list('movie_id', flat=True))
+    if movie_id in existing_ids:
+        existing_ids.remove(movie_id)
+
+    candidates = Movie.objects.exclude(movie_id__in=[movie_id])
+    if not candidates.exists():
+        return JsonResponse({'success': False, 'message': '没有可替换的电影'})
+
+    new_movie = random.choice(list(candidates))
+
+    # ✅ 添加 poster_url 和 tag_list（重要）
+    main_genre = new_movie.genres.split("|")[0] if new_movie.genres else "default"
+    new_movie.poster_url = f'posters/{main_genre.strip()}.png'
+    new_movie.tag_list = [t.strip() for t in new_movie.tags.split("|") if t.strip()] if isinstance(new_movie.tags, str) else []
+
+    # ✅ 渲染组件模板
+    html = render_to_string('components/movie_card.html', {
+        'movie': new_movie
+    }, request=request)
+
+    return JsonResponse({
+        'success': True,
+        'html': html
+    })
+

@@ -1,0 +1,35 @@
+{% load static %}
+<div class="movie-card" id="card-{{ movie.movie_id }}">
+
+  <div class="poster-box">
+    <div style="position: relative;">
+
+      <img src="{% static movie.poster_url %}" class="poster-image" alt="{{ movie.title }}">
+      <button type="button" onclick="replaceMovie({{ movie.movie_id }})" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">
+        ×
+      </button>
+    </div>
+  </div>
+  <div class="card-info">
+    <h3>🎬 {{ movie.title }}</h3>
+    <p>📅 类型：{{ movie.genres }}</p>
+    <p>🏷️ 标签：
+      <span class="tag-container" id="tags-{{ movie.movie_id }}">
+        {% for tag in movie.tag_list %}
+          <a class="tag-badge" href="https://www.baidu.com/s?wd={{ tag|urlencode }}" target="_blank">{{ tag }}</a>
+        {% endfor %}
+      </span>
+      {% if movie.tag_list|length > 5 %}
+        <a href="javascript:void(0)" class="tag-toggle" onclick="toggleTags({{ movie.movie_id }})">展开</a>
+      {% endif %}
+    </p>
+    <label>评分：</label>
+    <div class="star-rating">
+      {% for i in "54321"|make_list %}
+        <input type="radio" id="movie_{{ movie.movie_id }}_{{ i }}" name="movie_{{ movie.movie_id }}" value="{{ i }}">
+        <label for="movie_{{ movie.movie_id }}_{{ i }}">★</label>
+      {% endfor %}
+    </div>
+    <div style="font-size: 0.75rem; color: #007aff;">点击星星评分</div>
+  </div>
+</div>

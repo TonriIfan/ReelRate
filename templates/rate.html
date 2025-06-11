@@ -141,11 +141,18 @@
         {% csrf_token %}
         <div class="movie-grid">
           {% for movie in movies %}
-            <div class="movie-card" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:'1' }}00">
-              <!-- 海报图片 -->
-              <div class="poster-box">
-                <img src="{% static movie.poster_url %}" alt="{{ movie.title }}" class="poster-image">
-              </div>
+            <div class="movie-card" id="card-{{ movie.movie_id }}" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:'1' }}00">
+                <div style="position: relative;">
+
+                  <!-- 海报图片 -->
+                  <div class="poster-box">
+                    <img src="{% static movie.poster_url %}" alt="{{ movie.title }}" class="poster-image">
+                    <button type="button" onclick="replaceMovie({{ movie.movie_id }})" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">
+                            ×
+                    </button>
+                  </div>
+                </div>
+
 
               <!-- 卡片底部信息 -->
               <div class="card-info">
@@ -182,6 +189,22 @@
     <p>© 2025 ReelRate. Developed by Tao Yifan and Le Haomiao.</p>
 </footer>
 <script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 function toggleTags(movieId) {
     const container = document.getElementById('tags-' + movieId);
     container.classList.toggle('expanded');
@@ -192,6 +215,28 @@ function toggleTags(movieId) {
         toggleLink.textContent = '展开';
     }
 }
+
+
+function replaceMovie(movieId) {
+    fetch(`/replace_rating/${movieId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const card = document.getElementById(`card-${movieId}`);
+            card.outerHTML = data.html;
+        } else {
+            alert("⚠ 替换失败：" + data.message);
+        }
+    });
+}
+
+
 </script>
 
 </body>
