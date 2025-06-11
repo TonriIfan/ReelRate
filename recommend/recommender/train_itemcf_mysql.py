@@ -10,7 +10,7 @@ from django.db import transaction
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JAR_PATH = os.path.join(BASE_DIR, "lib", "mysql-connector-j-8.0.33", "mysql-connector-j-8.0.33.jar")
 
-def generate_itemcf_for_user_mysql(user_id: int, top_n: int = 10, sample_fraction: float = 0.05):
+def generate_itemcf_for_user_mysql(user_id: int, top_n: int = 10, sample_fraction: float = 0.01):
     print(f"🎯 使用 PySpark 从 MySQL 为用户 {user_id} 生成推荐")
     print(f"📦 加载 JDBC 驱动路径：{JAR_PATH}")
 

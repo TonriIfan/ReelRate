@@ -9,6 +9,10 @@ from recommend.models import Rating, Movie, RecommendedMovie
 # from recommend.recommender.train_itemcf_spark import generate_itemcf_for_user_spark
 from recommend.recommender.train_itemcf_mysql import generate_itemcf_for_user_mysql
 from recommend.export.export_ratings_csv import export_ratings_csv
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from recommend.models import RecommendedMovie, Movie
+import random
 
 def index(request):
     return render(request, "index.html")
@@ -167,3 +171,33 @@ def register(request):
             return redirect("rate_movies")
 
     return render(request, "register.html")
+
+
+@require_POST
+def replace_movie(request, rec_id):
+    try:
+        rec = RecommendedMovie.objects.get(id=rec_id, user=request.user)
+    except RecommendedMovie.DoesNotExist:
+        return JsonResponse({'success': False, 'message': '推荐不存在'})
+
+    rated_movie_ids = list(RecommendedMovie.objects.filter(user=request.user).values_list('movie_id', flat=True))
+    new_candidates = Movie.objects.exclude(movie_id__in=rated_movie_ids)
+
+    if not new_candidates.exists():
+        return JsonResponse({'success': False, 'message': '无可替换电影'})
+
+    new_movie = random.choice(list(new_candidates))
+    rec.movie = new_movie
+    rec.score = random.uniform(3.5, 5.0)  # 可以替换为算法推荐分数
+    rec.save()
+
+    main_genre = new_movie.genres.split("|")[0] if new_movie.genres else "default"
+    poster_url = f'posters/{main_genre}.png'
+
+    return JsonResponse({
+        'success': True,
+        'title': new_movie.title,
+        'genres': new_movie.genres,
+        'score': rec.score,
+        'poster_url': poster_url
+    })

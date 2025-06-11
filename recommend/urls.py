@@ -9,4 +9,5 @@ urlpatterns = [
     path('rate/', views.rate_movies, name='rate_movies'),
     path('recommend/', views.show_recommendations, name='show_recommendation'),
     path('logout/', LogoutView.as_view(next_page='index'), name='logout'),
+    path('replace_movie/<int:rec_id>/', views.replace_movie, name='replace_movie'),
 ]
