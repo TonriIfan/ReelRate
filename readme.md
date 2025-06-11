@@ -7,6 +7,91 @@ MovieLens训练集下载地址:
 ---
 
 ## 🚀 快速开始
-1️⃣ 克隆项目
+### 1️⃣ 克隆项目
 
+```bash
+git clone https://github.com/TonriIfan/ReelRate.git
+cd ReelRate
+```
+### 2️⃣ 创建虚拟环境 & 安装依赖
+```bash
+conda create -n MovieRecommand python=3.11
+conda activate MovieRecommand
+pip install -r requirements.txt
+```
+> ⚠️ 需要手动下载 PySpark 依赖的 JDBC 驱动文件至 lib/mysql-connector-java-8.0.33.jar
+https://dev.mysql.com/downloads/connector/j/
+> 
 
+### 3️⃣ 数据准备
+
+    下载数据集：ml-10M.zip
+
+    解压到项目根目录 ./ml-10M100K/
+
+    运行脚本转换为 CSV 格式：
+```bash
+python convert_movielens_to_csv.py
+```
+
+### 🛢️ 导入评分数据（可选：MySQL）
+确保 MySQL 运行，并创建数据库 reelrate_db：
+```sql
+CREATE DATABASE reelrate_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+使用 SQLAlchemy 或 pandas 导入：
+```python
+from sqlalchemy import create_engine
+import pandas as pd
+
+df = pd.read_csv("ratings_with_tags.csv")
+engine = create_engine("mysql+pymysql://root:yourpassword@localhost/reelrate_db")
+df.to_sql("recommend_rating", con=engine, if_exists="replace", index=False)
+```
+
+### 💡 推荐算法逻辑（ItemCF + Spark）
+系统支持如下推荐方式：
+
+    用户注册 → 评分系统抽样电影
+
+    提交评分后自动执行：
+
+        使用 PySpark + MySQL 读取评分表
+
+        构建电影评分矩阵
+
+        使用 cosine_similarity 计算电影相似度
+
+        为当前用户推荐 Top-N 未看过的电影
+
+        写入 RecommendedMovie 表供展示页面读取
+```python
+recommend/recommender/train_itemcf_mysql.py
+```
+
+### 📁 项目结构概览
+```csharp
+├── ml-10M100K/               # 原始 MovieLens 数据目录
+├── convert_movielens_to_csv.py  # 数据转换脚本
+├── recommend/
+│   ├── models.py             # 数据模型
+│   ├── views.py              # 用户注册/评分/推荐逻辑
+│   └── recommender/
+│       └── train_itemcf_mysql.py  # 推荐算法入口
+├── templates/                # 前端页面（index/login/register/rate）
+├── static/                  # 样式与动画资源
+├── ratings_with_tags.csv    # 转换后的评分数据
+└── requirements.txt
+```
+### ✨ 特色功能
+
+    Apple 风格动画首页（支持 AOS 特效）
+
+    随机抽样评分界面
+
+    推荐系统支持大数据 Spark 架构
+
+    标签增强推荐模型
+### 📜 授权协议
+
+本项目基于 MIT 开源许可。
