@@ -39,14 +39,30 @@ python convert_movielens_to_csv.py
 ```sql
 CREATE DATABASE reelrate_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
-使用 SQLAlchemy 或 pandas 导入：
+迁移数据
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+导入csv
+```bash
+python manage.py shell
+```
 ```python
-from sqlalchemy import create_engine
-import pandas as pd
+from recommend.import_data import import_ratings_from_csv
+import_ratings_from_csv("ratings_with_tags.csv")
+```
+导入完成后测试
+```python
+from recommend.models import User, Movie, Rating
 
-df = pd.read_csv("ratings_with_tags.csv")
-engine = create_engine("mysql+pymysql://root:yourpassword@localhost/reelrate_db")
-df.to_sql("recommend_rating", con=engine, if_exists="replace", index=False)
+print("用户数量：", User.objects.count())
+print("电影数量：", Movie.objects.count())
+print("评分数量：", Rating.objects.count())
+
+# 随便看一个电影的标签
+m = Movie.objects.first()
+print(m.title, m.genres, m.tags)
 ```
 
 ### 💡 推荐算法逻辑（ItemCF + Spark）
