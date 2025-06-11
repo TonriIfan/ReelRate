@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>登录 - ReelRate</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'js/aos.css' %}">
+    <script src="{% static 'js/aos.js' %}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body onload="AOS.init()">
+
+<header class="header">
+    <div class="logo">🎬 ReelRate</div>
+    <nav class="nav">
+        <a href="{% url 'login' %}">登录</a>
+        <a href="{% url 'register' %}">注册</a>
+        <a href="{% url 'logout' %}">登出</a>
+    </nav>
+</header>
+
+<section class="form-section" data-aos="fade-up">
+    <h2 class="form-title">用户登录</h2>
+    <form method="post" class="login-form">
+        {% csrf_token %}
+        <label for="username">用户名</label>
+        <input type="text" id="username" name="username" placeholder="请输入用户名" required>
+
+        <label for="password">密码</label>
+        <input type="password" id="password" name="password" placeholder="请输入密码" required>
+
+        <button type="submit" class="cta-button" data-aos="zoom-in">登录</button>
+    </form>
+    <p class="form-footer">还没有账号？<a href="{% url 'register' %}">点击注册</a></p>
+</section>
+
+<footer class="footer">
+    <p>© 2025 ReelRate. Inspired by Apple Design.</p>
+</footer>
+
+</body>
+</html>

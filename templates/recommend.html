@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>ReelRate - 推荐结果</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'js/aos.css' %}">
+    <script src="{% static 'js/aos.js' %}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .recommend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .movie-card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 12px 12px 0 0;
+        }
+        .card-info {
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+        .card-info h3 {
+            font-size: 1rem;
+            margin: 0 0 0.5rem;
+        }
+        .score {
+            color: #007aff;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body onload="AOS.init()" style="background: #f8f8f8; color: #111;">
+
+<header class="header">
+    <div class="logo">🎬 ReelRate
+    </div>
+    <nav class="nav">
+        <span>你好，{{ request.user.username }}</span>
+        <a href="{% url 'rate_movies' %}">继续评分</a>
+        <a href="{% url 'logout' %}">登出</a>
+
+
+    </nav>
+</header>
+
+<section style="padding: 4rem 2rem; max-width: 1200px; margin: auto;">
+    <h2 class="form-title">为你推荐的电影</h2>
+
+    {% if recommended_movies %}
+        <div class="recommend-grid">
+            {% for rec in recommended_movies %}
+            {% with movie=rec.movie %}
+            <div class="movie-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'1' }}00" id="movie-card-{{ rec.id }}">
+                <div style="position: relative;">
+                    <img src="{% static rec.poster_url %}" alt="{{ rec.movie.title }}">
+                    <button onclick="replaceMovie({{ rec.id }})"
+                            style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">
+                        ×
+                    </button>
+                </div>
+                <div class="card-info" id="card-info-{{ rec.id }}">
+                    <h3>{{ rec.movie.title }}</h3>
+                    <p>📅 类型：{{ rec.movie.genres }}</p>
+                    <p class="score">推荐指数：{{ rec.score|floatformat:2 }}</p>
+                </div>
+            </div>
+
+            {% endwith %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>暂无推荐，请返回首页评分！</p>
+    {% endif %}
+</section>
+
+<footer class="footer">
+    <p>© 2025 ReelRate. Developed by Tao Yifan and Le Haomiao.</p>
+</footer>
+<script>
+function replaceMovie(recId) {
+    fetch(`/replace_movie/${recId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const card = document.getElementById(`movie-card-${recId}`);
+            const info = document.getElementById(`card-info-${recId}`);
+            card.querySelector('img').src = `/static/${data.poster_url}`;
+            info.innerHTML = `
+                <h3>${data.title} )</h3>
+                <p>📅 类型：${data.genres}</p>
+                <p class="score">推荐指数：${data.score.toFixed(2)}</p>
+            `;
+        } else {
+            alert("⚠ 替换失败：" + data.message);
+        }
+    });
+}
+</script>
+
+</body>
+</html>

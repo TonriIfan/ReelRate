@@ -1,0 +1,139 @@
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Arial', sans-serif;
+    background: #f8f8f8;
+    color: #111;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.logo {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.nav a {
+    margin-left: 1.5rem;
+    text-decoration: none;
+    color: #111;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav a:hover {
+    color: #007aff;
+}
+
+.hero {
+    text-align: center;
+    padding: 10vh 2rem;
+    background: linear-gradient(to bottom right, #ffffff, #f1f1f1);
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.cta-button {
+    display: inline-block;
+    background: #007aff;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 32px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.cta-button:hover {
+    background: #005fc1;
+}
+
+.footer {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #aaa;
+    padding: 2rem 1rem;
+}
+
+.form-section {
+    max-width: 400px;
+    margin: 60px auto;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.form-title {
+    font-size: 26px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-form label {
+    display: block;
+    margin-top: 20px;
+    font-weight: 500;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    transition: 0.2s border-color;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: #007aff;
+}
+
+.cta-button {
+    display: block;
+    width: 100%;
+    background: #007aff;
+    color: white;
+    padding: 12px;
+    margin-top: 30px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.cta-button:hover {
+    background: #005ecc;
+}
+
+.form-footer {
+    margin-top: 20px;
+    text-align: center;
+}
+
+nav span {
+    margin-right: 1rem;
+    font-weight: bold;
+    color: #1d1d1f;
+}
